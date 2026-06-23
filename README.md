@@ -109,8 +109,7 @@ agent = true       # Agent name
 pane = true        # Pane ID [wX:pY]
 status = true      # Status text (idle/working/blocked/done)
 duration = true    # Duration in previous state
-session = false    # Session ID (default: off)
-output = false     # Last output preview (default: off, has performance cost)
+session = true     # Session ID
 ```
 
 ### Default values
@@ -122,9 +121,8 @@ output = false     # Last output preview (default: off, has performance cost)
 | `agent` | `true` | Show agent name |
 | `pane` | `true` | Show pane ID |
 | `status` | `true` | Show status text |
-| `duration` | `true` | Show duration |
-| `session` | `false` | Show session ID |
-| `output` | `false` | Show last output preview |
+| `duration` | `true` | Show duration in previous state |
+| `session` | `true` | Show full session ID |
 
 ## Build from source
 

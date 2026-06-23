@@ -127,8 +127,7 @@ config-init:
 		echo 'pane = true' >> "$(CONFIG_DIR)/config.toml"; \
 		echo 'status = true' >> "$(CONFIG_DIR)/config.toml"; \
 		echo 'duration = true' >> "$(CONFIG_DIR)/config.toml"; \
-		echo 'session = false' >> "$(CONFIG_DIR)/config.toml"; \
-		echo 'output = false' >> "$(CONFIG_DIR)/config.toml"; \
+		echo 'session = true' >> "$(CONFIG_DIR)/config.toml"; \
 		echo "created $(CONFIG_DIR)/config.toml"; \
 	else \
 		echo "config already exists at $(CONFIG_DIR)/config.toml"; \
