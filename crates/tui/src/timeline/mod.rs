@@ -42,13 +42,14 @@ pub fn run() -> InsightResult<()> {
         if now.duration_since(last_poll) >= Duration::from_secs(2) {
             if let Ok(panes) = herdr_insight_infra::list_all_panes() {
                 if let Ok(mut snaps) = herdr_insight_domain::poll_snapshots(&panes) {
-                    // Enrich snapshots with output preview if configured
-                    if state.config.columns.output {
-                        for snap in &mut snaps {
-                            snap.last_output =
-                                herdr_insight_infra::read_pane_preview(&snap.pane_id, 60);
+                    // Track which panes are currently active
+                    state.active_panes.clear();
+                    for snap in &snaps {
+                        if snap.state.is_active() {
+                            state.active_panes.insert(snap.pane_id.clone());
                         }
                     }
+
                     let transitions =
                         herdr_insight_domain::detect_transitions(&previous_snapshots, &snaps);
                     for t in &transitions {

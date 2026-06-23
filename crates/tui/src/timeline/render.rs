@@ -42,12 +42,12 @@ pub fn draw(frame: &mut Frame, state: &TimelineState, config: &TimelineConfig) {
 }
 
 fn render_entries(frame: &mut Frame, area: Rect, state: &TimelineState, config: &TimelineConfig) {
-    // Filter to only show active tasks (working/blocked states)
+    // Filter to only show active tasks for currently active panes
     // and deduplicate by pane_id - keep only the latest entry per agent
     let mut seen_panes = std::collections::HashSet::new();
     let mut entries: Vec<&StateTransition> = Vec::new();
     for t in state.transitions.iter().rev() {
-        if t.to.is_active() && seen_panes.insert(&t.pane_id) {
+        if t.to.is_active() && state.active_panes.contains(&t.pane_id) && seen_panes.insert(&t.pane_id) {
             entries.push(t);
         }
     }
