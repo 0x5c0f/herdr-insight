@@ -41,7 +41,7 @@ pub fn run() -> InsightResult<()> {
         let now = Instant::now();
         if now.duration_since(last_poll) >= Duration::from_secs(2) {
             if let Ok(panes) = herdr_insight_infra::list_all_panes() {
-                if let Ok(mut snaps) = herdr_insight_domain::poll_snapshots(&panes) {
+                if let Ok(snaps) = herdr_insight_domain::poll_snapshots(&panes) {
                     // Track which panes are currently active
                     state.active_panes.clear();
                     for snap in &snaps {

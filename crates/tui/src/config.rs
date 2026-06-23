@@ -23,8 +23,6 @@ pub(crate) struct ColumnConfig {
     pub(crate) duration: bool,
     #[serde(default = "default_false")]
     pub(crate) session: bool,
-    #[serde(default = "default_false")]
-    pub(crate) output: bool,
 }
 
 fn default_true() -> bool {
@@ -44,7 +42,6 @@ impl Default for ColumnConfig {
             status: true,
             duration: true,
             session: false,
-            output: false,
         }
     }
 }
