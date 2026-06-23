@@ -9,7 +9,7 @@ use crossterm::{
 use herdr_insight_common::InsightResult;
 use ratatui::prelude::*;
 use state::TimelineState;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::time::{Duration, Instant};
 
 pub fn run() -> InsightResult<()> {
@@ -42,13 +42,24 @@ pub fn run() -> InsightResult<()> {
         if now.duration_since(last_poll) >= Duration::from_secs(2) {
             if let Ok(panes) = herdr_insight_infra::list_all_panes() {
                 if let Ok(snaps) = herdr_insight_domain::poll_snapshots(&panes) {
-                    // Track which panes are currently active
-                    state.active_panes.clear();
+                    // Track which panes are currently active and their start times
+                    let now_utc = chrono::Utc::now();
+                    let mut current_active = HashSet::new();
                     for snap in &snaps {
                         if snap.state.is_active() {
-                            state.active_panes.insert(snap.pane_id.clone());
+                            current_active.insert(snap.pane_id.clone());
+                            // Record start time if this is a new active task
+                            state
+                                .task_start_times
+                                .entry(snap.pane_id.clone())
+                                .or_insert(now_utc);
                         }
                     }
+                    // Clean up start times for panes that are no longer active
+                    state
+                        .task_start_times
+                        .retain(|k, _| current_active.contains(k));
+                    state.active_panes = current_active;
 
                     let transitions =
                         herdr_insight_domain::detect_transitions(&previous_snapshots, &snaps);

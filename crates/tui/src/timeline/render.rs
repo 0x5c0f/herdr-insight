@@ -81,7 +81,14 @@ fn render_entries(frame: &mut Frame, area: Rect, state: &TimelineState, config: 
             break;
         }
         let row = Rect::new(entry_area.x, y, entry_area.width, 1);
-        render_entry(frame, row, entry, config, &state.active_panes);
+        render_entry(
+            frame,
+            row,
+            entry,
+            config,
+            &state.active_panes,
+            &state.task_start_times,
+        );
     }
 }
 
@@ -141,6 +148,7 @@ fn render_entry(
     entry: &StateTransition,
     config: &TimelineConfig,
     active_panes: &std::collections::HashSet<String>,
+    task_start_times: &std::collections::HashMap<String, chrono::DateTime<chrono::Utc>>,
 ) {
     let mut spans = Vec::new();
 
@@ -195,8 +203,13 @@ fn render_entry(
 
     // DURATION column - show task duration (stopped if task ended, live if still active)
     if config.columns.duration {
+        // Use actual task start time if available, otherwise fall back to entry timestamp
+        let start_time = task_start_times
+            .get(&entry.pane_id)
+            .copied()
+            .unwrap_or(entry.timestamp);
         let end_time = entry.ended_at.unwrap_or_else(chrono::Utc::now);
-        let dur = (end_time - entry.timestamp).num_milliseconds() as f64 / 1000.0;
+        let dur = (end_time - start_time).num_milliseconds() as f64 / 1000.0;
         if dur >= 3600.0 {
             spans.push(Span::styled(
                 format!("{:4.0}h ", dur / 3600.0),

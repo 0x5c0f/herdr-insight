@@ -1,5 +1,5 @@
 use herdr_insight_common::StateTransition;
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 use crate::config::TimelineConfig;
 
@@ -12,6 +12,8 @@ pub struct TimelineState {
     pub config: TimelineConfig,
     /// Set of pane IDs that are currently in active state (working/blocked).
     pub active_panes: HashSet<String>,
+    /// Track when each pane_id started its current active task.
+    pub task_start_times: HashMap<String, chrono::DateTime<chrono::Utc>>,
 }
 
 impl TimelineState {
@@ -23,6 +25,7 @@ impl TimelineState {
             error_message: None,
             config,
             active_panes: HashSet::new(),
+            task_start_times: HashMap::new(),
         }
     }
 }
