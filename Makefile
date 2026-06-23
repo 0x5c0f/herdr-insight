@@ -120,7 +120,7 @@ logs:
 config-init:
 	@mkdir -p "$(CONFIG_DIR)"
 	@if [ ! -f "$(CONFIG_DIR)/config.toml" ]; then \
-		echo '[timeline.columns]' > "$(CONFIG_DIR)/config.toml"; \
+		echo '[columns]' > "$(CONFIG_DIR)/config.toml"; \
 		echo 'time = true' >> "$(CONFIG_DIR)/config.toml"; \
 		echo 'state = true' >> "$(CONFIG_DIR)/config.toml"; \
 		echo 'agent = true' >> "$(CONFIG_DIR)/config.toml"; \

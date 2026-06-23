@@ -102,7 +102,7 @@ make config-init
 ### Column visibility
 
 ```toml
-[timeline.columns]
+[columns]
 time = true        # Timestamp
 state = true       # Status icon (●▲○◌)
 agent = true       # Agent name
