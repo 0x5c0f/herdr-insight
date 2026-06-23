@@ -17,8 +17,7 @@ fn roundtrip_jsonl() {
         last_output: None,
     };
     append_jsonl_at(tmp.path(), "test.jsonl", &snap).expect("append");
-    let read: Vec<AgentSnapshot> =
-        read_jsonl_at(tmp.path(), "test.jsonl").expect("read");
+    let read: Vec<AgentSnapshot> = read_jsonl_at(tmp.path(), "test.jsonl").expect("read");
     assert_eq!(read.len(), 1);
     assert_eq!(read[0].pane_id, "pane-1");
 }
@@ -26,7 +25,6 @@ fn roundtrip_jsonl() {
 #[test]
 fn read_empty_file_returns_empty_vec() {
     let tmp = tempfile::tempdir().expect("tempdir");
-    let result: Vec<AgentSnapshot> =
-        read_jsonl_at(tmp.path(), "nonexistent.jsonl").expect("read");
+    let result: Vec<AgentSnapshot> = read_jsonl_at(tmp.path(), "nonexistent.jsonl").expect("read");
     assert!(result.is_empty());
 }

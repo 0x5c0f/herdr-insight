@@ -10,7 +10,11 @@ pub(crate) fn state_dir() -> InsightResult<PathBuf> {
         .map_err(|_| InsightError::DataCorrupted("HERDR_PLUGIN_STATE_DIR not set".into()))
 }
 
-pub fn append_jsonl_at<T: Serialize>(base_dir: &Path, filename: &str, entry: &T) -> InsightResult<()> {
+pub fn append_jsonl_at<T: Serialize>(
+    base_dir: &Path,
+    filename: &str,
+    entry: &T,
+) -> InsightResult<()> {
     fs::create_dir_all(base_dir)?;
     let path = base_dir.join(filename);
     let mut file = OpenOptions::new().create(true).append(true).open(&path)?;

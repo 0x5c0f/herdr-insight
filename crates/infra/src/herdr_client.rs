@@ -11,7 +11,9 @@ pub(crate) fn herdr_bin() -> String {
 pub fn read_pane_preview(pane_id: &str, max_chars: usize) -> Option<String> {
     let bin = herdr_bin();
     let output = Command::new(&bin)
-        .args(["pane", "read", pane_id, "--source", "visible", "--lines", "5"])
+        .args([
+            "pane", "read", pane_id, "--source", "visible", "--lines", "5",
+        ])
         .output()
         .ok()?;
 
@@ -20,10 +22,7 @@ pub fn read_pane_preview(pane_id: &str, max_chars: usize) -> Option<String> {
     }
 
     let stdout = String::from_utf8_lossy(&output.stdout);
-    let last_line = stdout
-        .lines()
-        .rev()
-        .find(|line| !line.trim().is_empty())?;
+    let last_line = stdout.lines().rev().find(|line| !line.trim().is_empty())?;
 
     let truncated: String = last_line.chars().take(max_chars).collect();
     if truncated.len() < last_line.len() {

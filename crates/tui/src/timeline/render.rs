@@ -84,7 +84,10 @@ fn render_header(frame: &mut Frame, area: Rect, config: &TimelineConfig) {
     let mut spans = Vec::new();
 
     if config.columns.time {
-        spans.push(Span::styled(" TIME  ", Style::default().fg(Color::DarkGray)));
+        spans.push(Span::styled(
+            " TIME  ",
+            Style::default().fg(Color::DarkGray),
+        ));
     }
     if config.columns.state {
         spans.push(Span::styled("ST", Style::default().fg(Color::DarkGray)));
@@ -95,16 +98,25 @@ fn render_header(frame: &mut Frame, area: Rect, config: &TimelineConfig) {
         spans.push(Span::raw(" "));
     }
     if config.columns.pane {
-        spans.push(Span::styled("PANE    ", Style::default().fg(Color::DarkGray)));
+        spans.push(Span::styled(
+            "PANE    ",
+            Style::default().fg(Color::DarkGray),
+        ));
     }
     if config.columns.status {
-        spans.push(Span::styled("STATUS    ", Style::default().fg(Color::DarkGray)));
+        spans.push(Span::styled(
+            "STATUS    ",
+            Style::default().fg(Color::DarkGray),
+        ));
     }
     if config.columns.duration {
         spans.push(Span::styled("DUR  ", Style::default().fg(Color::DarkGray)));
     }
     if config.columns.session {
-        spans.push(Span::styled("SESSION   ", Style::default().fg(Color::DarkGray)));
+        spans.push(Span::styled(
+            "SESSION   ",
+            Style::default().fg(Color::DarkGray),
+        ));
     }
     if config.columns.output {
         spans.push(Span::styled("OUTPUT", Style::default().fg(Color::DarkGray)));
@@ -120,7 +132,10 @@ fn render_entry(frame: &mut Frame, area: Rect, entry: &StateTransition, config: 
     // TIME column
     if config.columns.time {
         let time = entry.timestamp.format("%H:%M").to_string();
-        spans.push(Span::styled(format!(" {time} "), Style::default().fg(Color::DarkGray)));
+        spans.push(Span::styled(
+            format!(" {time} "),
+            Style::default().fg(Color::DarkGray),
+        ));
     }
 
     // STATE column (icon)
@@ -140,7 +155,10 @@ fn render_entry(frame: &mut Frame, area: Rect, entry: &StateTransition, config: 
     // PANE column
     if config.columns.pane {
         let short_id = short_pane_id(&entry.pane_id);
-        spans.push(Span::styled(format!("[{short_id}]"), Style::default().fg(Color::DarkGray)));
+        spans.push(Span::styled(
+            format!("[{short_id}]"),
+            Style::default().fg(Color::DarkGray),
+        ));
         spans.push(Span::raw(" "));
     }
 
@@ -178,7 +196,10 @@ fn render_entry(frame: &mut Frame, area: Rect, entry: &StateTransition, config: 
             }
             None => "\u{2014} ".to_string(), // em dash
         };
-        spans.push(Span::styled(session_display, Style::default().fg(Color::DarkGray)));
+        spans.push(Span::styled(
+            session_display,
+            Style::default().fg(Color::DarkGray),
+        ));
     }
 
     // OUTPUT column
@@ -187,7 +208,10 @@ fn render_entry(frame: &mut Frame, area: Rect, entry: &StateTransition, config: 
             Some(text) => format!("\"{text}\""),
             None => "\u{2014}".to_string(),
         };
-        spans.push(Span::styled(output_display, Style::default().fg(Color::Gray)));
+        spans.push(Span::styled(
+            output_display,
+            Style::default().fg(Color::Gray),
+        ));
     }
 
     let line = Line::from(spans);
