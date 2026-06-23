@@ -42,12 +42,11 @@ pub fn draw(frame: &mut Frame, state: &TimelineState, config: &TimelineConfig) {
 }
 
 fn render_entries(frame: &mut Frame, area: Rect, state: &TimelineState, config: &TimelineConfig) {
-    // Filter to only show active tasks for currently active panes
-    // and deduplicate by pane_id - keep only the latest entry per agent
+    // Deduplicate by pane_id - keep only the latest entry per agent
     let mut seen_panes = std::collections::HashSet::new();
     let mut entries: Vec<&StateTransition> = Vec::new();
     for t in state.transitions.iter().rev() {
-        if t.to.is_active() && state.active_panes.contains(&t.pane_id) && seen_panes.insert(&t.pane_id) {
+        if seen_panes.insert(&t.pane_id) {
             entries.push(t);
         }
     }
@@ -69,7 +68,7 @@ fn render_entries(frame: &mut Frame, area: Rect, state: &TimelineState, config: 
     }
 
     if entries.is_empty() {
-        let msg = Paragraph::new(" No active tasks. Waiting for agent activity...")
+        let msg = Paragraph::new(" No agents detected. Waiting for agent activity...")
             .style(Style::default().fg(Color::Gray));
         frame.render_widget(msg, entry_area);
         return;
@@ -82,7 +81,7 @@ fn render_entries(frame: &mut Frame, area: Rect, state: &TimelineState, config: 
             break;
         }
         let row = Rect::new(entry_area.x, y, entry_area.width, 1);
-        render_entry(frame, row, entry, config);
+        render_entry(frame, row, entry, config, &state.active_panes);
     }
 }
 
@@ -136,7 +135,7 @@ fn render_header(frame: &mut Frame, area: Rect, config: &TimelineConfig) {
     frame.render_widget(Paragraph::new(line).style(Style::default()), row);
 }
 
-fn render_entry(frame: &mut Frame, area: Rect, entry: &StateTransition, config: &TimelineConfig) {
+fn render_entry(frame: &mut Frame, area: Rect, entry: &StateTransition, config: &TimelineConfig, active_panes: &std::collections::HashSet<String>) {
     let mut spans = Vec::new();
 
     // TIME column
@@ -148,9 +147,14 @@ fn render_entry(frame: &mut Frame, area: Rect, entry: &StateTransition, config: 
         ));
     }
 
-    // STATE column (icon)
+    // STATE column (icon) - show current state based on active_panes
     if config.columns.state {
-        let (icon, color) = state_icon_color(entry.to);
+        let current_state = if active_panes.contains(&entry.pane_id) {
+            entry.to  // Agent is still in the same state
+        } else {
+            herdr_insight_common::AgentState::Idle  // Agent is now idle
+        };
+        let (icon, color) = state_icon_color(current_state);
         spans.push(Span::styled(icon, Style::default().fg(color).bold()));
         spans.push(Span::raw(" "));
     }
@@ -172,9 +176,14 @@ fn render_entry(frame: &mut Frame, area: Rect, entry: &StateTransition, config: 
         spans.push(Span::raw(" "));
     }
 
-    // STATUS column
+    // STATUS column - show current state based on active_panes
     if config.columns.status {
-        let state_str = format!("{:?}", entry.to).to_lowercase();
+        let current_state = if active_panes.contains(&entry.pane_id) {
+            entry.to  // Agent is still in the same state
+        } else {
+            herdr_insight_common::AgentState::Idle  // Agent is now idle
+        };
+        let state_str = format!("{:?}", current_state).to_lowercase();
         spans.push(Span::raw(format!("{state_str:<10} ")));
     }
 
