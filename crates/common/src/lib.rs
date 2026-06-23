@@ -22,6 +22,13 @@ impl From<Option<String>> for AgentState {
     }
 }
 
+impl AgentState {
+    /// Returns true if this state represents an active task (working or blocked).
+    pub fn is_active(&self) -> bool {
+        matches!(self, AgentState::Working | AgentState::Blocked)
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AgentSnapshot {
     pub timestamp: chrono::DateTime<chrono::Utc>,

@@ -42,8 +42,15 @@ pub fn draw(frame: &mut Frame, state: &TimelineState, config: &TimelineConfig) {
 }
 
 fn render_entries(frame: &mut Frame, area: Rect, state: &TimelineState, config: &TimelineConfig) {
-    let mut entries: Vec<&StateTransition> = state.transitions.iter().collect();
-    entries.reverse(); // newest first
+    // Filter to only show active tasks (working/blocked states)
+    // and deduplicate by pane_id - keep only the latest entry per agent
+    let mut seen_panes = std::collections::HashSet::new();
+    let mut entries: Vec<&StateTransition> = Vec::new();
+    for t in state.transitions.iter().rev() {
+        if t.to.is_active() && seen_panes.insert(&t.pane_id) {
+            entries.push(t);
+        }
+    }
 
     let visible = area.height as usize;
     let start = state.scroll_offset.min(entries.len().saturating_sub(1));
@@ -62,7 +69,7 @@ fn render_entries(frame: &mut Frame, area: Rect, state: &TimelineState, config: 
     }
 
     if entries.is_empty() {
-        let msg = Paragraph::new(" No timeline data yet. Waiting for agent state changes...")
+        let msg = Paragraph::new(" No active tasks. Waiting for agent activity...")
             .style(Style::default().fg(Color::Gray));
         frame.render_widget(msg, entry_area);
         return;
@@ -165,22 +172,25 @@ fn render_entry(frame: &mut Frame, area: Rect, entry: &StateTransition, config: 
         spans.push(Span::raw(format!("{state_str:<10} ")));
     }
 
-    // DURATION column
+    // DURATION column - show how long the current task has been active
     if config.columns.duration {
-        if let Some(dur) = entry.duration_secs {
-            if dur >= 60.0 {
-                spans.push(Span::styled(
-                    format!("{:4.0}min ", dur / 60.0),
-                    Style::default().fg(Color::Gray),
-                ));
-            } else {
-                spans.push(Span::styled(
-                    format!("{:3.0}s ", dur),
-                    Style::default().fg(Color::Gray),
-                ));
-            }
+        let now = chrono::Utc::now();
+        let dur = (now - entry.timestamp).num_milliseconds() as f64 / 1000.0;
+        if dur >= 3600.0 {
+            spans.push(Span::styled(
+                format!("{:4.0}h ", dur / 3600.0),
+                Style::default().fg(Color::Gray),
+            ));
+        } else if dur >= 60.0 {
+            spans.push(Span::styled(
+                format!("{:4.0}min ", dur / 60.0),
+                Style::default().fg(Color::Gray),
+            ));
         } else {
-            spans.push(Span::raw("     "));
+            spans.push(Span::styled(
+                format!("{:3.0}s ", dur),
+                Style::default().fg(Color::Gray),
+            ));
         }
     }
 
