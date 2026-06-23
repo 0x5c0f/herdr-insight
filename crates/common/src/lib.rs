@@ -104,11 +104,25 @@ pub struct PaneInfo {
     pub cwd: Option<String>,
     #[serde(default)]
     pub focused: bool,
+    /// Agent session info from herdr. Can be a JSON object with "value" field.
     #[serde(default, rename = "agent_session")]
-    pub session_id: Option<String>,
+    pub agent_session: Option<serde_json::Value>,
     /// Derived: workspace name from workspace_id or cwd.
     #[serde(skip)]
     pub workspace_name: Option<String>,
+}
+
+impl PaneInfo {
+    /// Extract session ID string from agent_session JSON object.
+    pub fn session_id(&self) -> Option<String> {
+        match &self.agent_session {
+            Some(serde_json::Value::Object(map)) => {
+                map.get("value").and_then(|v| v.as_str()).map(String::from)
+            }
+            Some(serde_json::Value::String(s)) => Some(s.clone()),
+            _ => None,
+        }
+    }
 }
 
 // ---- Error types ----

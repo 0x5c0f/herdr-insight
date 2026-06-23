@@ -24,7 +24,7 @@ pub fn poll_snapshots(pane_infos: &[PaneInfo]) -> InsightResult<Vec<AgentSnapsho
                 .unwrap_or_else(|| p.cwd.clone().unwrap_or_default()),
             custom_status: None,
             pane_title: None,
-            session_id: p.session_id.clone(),
+            session_id: p.session_id(),
             last_output: None,
         })
         .collect();

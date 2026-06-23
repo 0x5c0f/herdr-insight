@@ -82,10 +82,12 @@ pub fn run() -> InsightResult<()> {
                         break Ok(());
                     }
                     KeyCode::Up | KeyCode::Char('k') => {
-                        state.scroll_offset = state.scroll_offset.saturating_add(1);
+                        // Scroll up toward newer entries (decrease offset)
+                        state.scroll_offset = state.scroll_offset.saturating_sub(1);
                     }
                     KeyCode::Down | KeyCode::Char('j') => {
-                        state.scroll_offset = state.scroll_offset.saturating_sub(1);
+                        // Scroll down toward older entries (increase offset)
+                        state.scroll_offset = state.scroll_offset.saturating_add(1);
                     }
                     _ => {}
                 }
