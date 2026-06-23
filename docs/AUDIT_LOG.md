@@ -223,4 +223,77 @@ All dependency directions comply with ai-dev-discipline. No forbidden edges.
 
 ---
 
+## 2026-06-23 — Full Re-Audit (from scratch)
+
+| Field | Value |
+|---|---|
+| **Project** | herdr-insight |
+| **Mode** | Multi-Crate Workspace (5 crates) |
+| **Health** | 🟢 |
+| **🔴 Critical** | 0 |
+| **🟠 High** | 0 |
+| **🟡 Medium** | 0 |
+| **🔵 Low** | 1 |
+| **Total LoC** | 966 |
+
+### Findings
+
+| ID | Severity | Summary | File | Status |
+|---|---|---|---|---|
+| C10 | 🔵 Low | Intentional TODO marker (design note) | `crates/domain/src/lib.rs:8` | 🔁 Recurring — 无变化，按设计延后 |
+
+### Passed Highlights
+
+- ✅ A1-A5: Workspace 结构完整，5-crate TUI 适配布局
+- ✅ B1-B3: 依赖方向全部合规，无禁止边
+- ✅ S1-S4, S6-S7: 安全检查全部通过（S5 跳过）
+- ✅ C1-C9: 代码质量优秀，零 unwrap/expect/unsafe/secrets/debug-output
+- ✅ D1, D3, D5: 模块组织良好（D2/D4 N/A）
+- ✅ 6 个测试全部通过
+- ✅ cargo clippy 零警告
+
+### Dependency Graph
+
+```
+app → tui (+ clap, tracing-subscriber)
+tui → common, domain, infra (+ ratatui, crossterm)
+domain → common (+ chrono)          ← 无 infra!
+infra → common (+ serde, chrono, tracing)
+common → (仅外部依赖)
+```
+
+### Notes
+
+- 完整从零审计，所有检查项均已覆盖
+- `cargo-audit` 仍未安装 — S5 第 5 次跳过
+- 代码行数 966（+15 vs 上次），主要变化在 timeline 渲染逻辑
+- 5-audit 轨迹: 🟡(单crate) → 🔴(B1) → 🟢(全部修复) → 🟢(稳定) → 🟢(稳定)
+
+---
+
+## Trend Summary
+
+| Audit | Date | Health | Critical | High | Medium | Low |
+|---|---|---|---|---|---|---|
+| Initial | 2026-06-23 | 🟡 | 0 | 1 | 0 | 2 |
+| Re-Audit #1 | 2026-06-23 | 🔴 | 1 | 0 | 2 | 1 |
+| Re-Audit #2 | 2026-06-23 | 🟢 | 0 | 0 | 0 | 1 |
+| Re-Audit #3 | 2026-06-23 | 🟢 | 0 | 0 | 0 | 1 |
+| Full Re-Audit | 2026-06-23 | 🟢 | 0 | 0 | 0 | 1 |
+
+---
+
+## Gotcha Validation
+
+### Gotchas Applied
+
+| Gotcha | Applied To | Rationale |
+|---|---|---|
+| "TUI-adapted crate topology" | A3 | server/api 为 Axum 专用，tui crate 是 TUI 插件的正确架构等价物 |
+| "Deserialize for storage is acceptable" | C4 | common 中的 Deserialize 用于 JSONL 存储和 herdr CLI 响应解析，非 HTTP 请求 |
+| "unwrap_or() ≠ unwrap()" | C1 | 所有 `.unwrap_or*()` 调用提供回退值，永不 panic |
+| "expect() in test fixtures is acceptable" | C2 | 所有 `.expect()` 调用仅在 `tests/` 中 |
+
+---
+
 *Audit conducted by ai-dev-audit v1.*

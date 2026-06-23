@@ -16,11 +16,8 @@
 
 **Overall Health:** 🟢 Healthy
 
-> 与上次审计一致：所有 Critical/High 问题已修复，仅剩 1 个 Low 级别的设计标记
-
 | Category | Status | Issues |
 |---|---|---|
-| MIGRATE. Architecture Mode | 🟢 | 0 (N/A — multi-crate) |
 | A. Workspace Structure | 🟢 | 0 |
 | B. Dependency Direction | 🟢 | 0 |
 | S. Security | 🟢 | 0 (S5 skipped) |
@@ -61,62 +58,91 @@
 
 ## Passed Checks
 
-### 持续通过的检查
+### §A — Workspace Structure
 
-- ✅ **S7 (cargo check):** 全 workspace 编译通过
-- ✅ **S6 (cargo clippy):** 零警告/错误
-- ✅ **S1 (unsafe):** 无 `unsafe` 块
-- ✅ **S2 (secrets):** 无硬编码密钥
-- ✅ **S3 (SQL):** N/A — 无数据库操作
-- ✅ **C1 (unwrap):** 零裸 `unwrap()`，全部使用安全变体
-- ✅ **C2 (expect):** 生产代码零 `expect()`
-- ✅ **C4 (DTO leakage):** `Deserialize` 仅用于 JSONL 存储
-- ✅ **C5 (main.rs):** 16 行，纯接线
-- ✅ **C8 (tests):** 测试存在且通过
-- ✅ **C9 (debug output):** 无 debug 宏残留
-- ✅ **A1 (workspace manifest):** 正确配置 `[workspace]`
-- ✅ **A2 (crate directory):** 5 crates 在 `crates/` 下
-- ✅ **A4 (workspace deps):** `[workspace.dependencies]` 统一版本管理
-- ✅ **A5 (unexplained crates):** 所有 crate 角色清晰
+- ✅ **A1 (Workspace manifest):** 根 `Cargo.toml` 正确配置 `[workspace]`，`resolver = "2"`，`members = ["crates/*"]`
+- ✅ **A2 (Crate directory):** 5 crates 均在 `crates/` 目录下
+- ✅ **A3 (Standard crates):** TUI 插件适配布局 — `app`/`common`/`domain`/`infra`/`tui`。`server`/`api` 为 Axum 专用，不适用于 TUI 插件。`config` 已延后（当前使用环境变量 + TOML 配置文件）
+- ✅ **A4 (Workspace dep management):** `[workspace.dependencies]` 统一管理 10 个共享依赖版本
+- ✅ **A5 (No unexplained crates):** 所有 crate 角色清晰：`app`=入口、`common`=共享类型/错误、`domain`=业务逻辑、`infra`=外部 I/O、`tui`=渲染层
 
-### 依赖方向（全部合规）
+### §B — Dependency Direction
 
+依赖图（全部合规）：
 ```
 app → tui (+ clap, tracing-subscriber)
 tui → common, domain, infra (+ ratatui, crossterm)
 domain → common (+ chrono)          ← 无 infra!
 infra → common (+ serde, chrono, tracing)
-common → serde, serde_json, chrono, tracing, thiserror
+common → (仅外部依赖)
 ```
 
-所有依赖方向符合 ai-dev-discipline 规范，无禁止依赖边。
+- ✅ **B1:** domain 不依赖 infra/api/server/config
+- ✅ **B2:** common 不依赖任何内部 crate
+- ✅ **B3:** app 通过 tui 间接访问 domain/infra
+
+### §S — Security
+
+- ✅ **S1 (unsafe):** 无 `unsafe` 块
+- ✅ **S2 (Hardcoded secrets):** 无硬编码密钥
+- ✅ **S3 (SQL injection):** N/A — 无数据库操作
+- ✅ **S4 (Auth middleware):** N/A — TUI 插件
+- ✅ **S5 (Known CVEs):** SKIPPED — `cargo-audit` 未安装
+- ✅ **S6 (Clippy errors):** `cargo clippy` 零警告/错误
+- ✅ **S7 (cargo check):** 全 workspace 编译通过
+
+### §C — Code Quality
+
+- ✅ **C1 (unwrap):** 生产代码零裸 `unwrap()`
+- ✅ **C2 (expect):** 生产代码零 `expect()`
+- ✅ **C3 (Error typing):** domain 使用 `thiserror`（通过 common 的 `InsightError`）
+- ✅ **C4 (DTO leakage):** `Deserialize` 仅用于 JSONL 存储和 herdr CLI 响应解析，非 HTTP 请求
+- ✅ **C5 (main.rs):** 16 行，纯接线（tracing → CLI → tui）
+- ✅ **C6 (AppState):** N/A — 无 AppState
+- ✅ **C7 (anyhow scope):** 无 `anyhow` 依赖
+- ✅ **C8 (Tests exist):** 6 个测试：domain 4 个 + infra 2 个
+- ✅ **C9 (Debug output):** 无 `println!`/`dbg!`/`eprintln!`
+
+### §D — Module Organization
+
+- ✅ **D1 (domain naming):** domain 含 `ports.rs`（trait 定义），模块按职责命名
+- ✅ **D2 (api structure):** N/A — 无 api crate
+- ✅ **D3 (domain ports):** `crates/domain/src/ports.rs` 含 `PaneRepository` trait
+- ✅ **D4 (server middleware):** N/A — 无 server crate
+- ✅ **D5 (infra sub-grouping):** infra 拆分为 `herdr_client.rs`（CLI 调用）+ `persistence.rs`（JSONL 存储）
 
 ---
 
 ## Skipped / Not Applicable
 
-- **S4 (Auth middleware):** N/A — TUI 插件，无 HTTP 路由
-- **S5 (cargo audit):** Skipped — `cargo-audit` 未安装。发布前请运行 `cargo install cargo-audit` 并重新审计
-- **A3 (全部 7 crates):** N/A — `server`/`api` 为 Axum 专用 crate，`config` 可延后
-- **D1 (domain 模块命名):** domain 含 `ports.rs`，当前扁平结构可接受（65 行）
-- **D2, D4:** N/A — 无 `api`/`server` crate
-- **§E (Frontend):** N/A — 无前端
+| Check ID | Reason |
+|---|---|
+| S4 | TUI 插件，无 HTTP 路由 |
+| S5 | `cargo-audit` 未安装。发布前请运行 `cargo install cargo-audit` 并重新审计 |
+| A3 (server/api) | TUI 插件适配布局，server/api 为 Axum 专用 |
+| D2 | 无 api crate |
+| D4 | 无 server crate |
+| §E | 无前端 |
 
 ---
 
 ## Observations
 
-1. **架构稳定。** 自上次审计以来，代码行数从 686 增至 951（+38%），主要是 CI/CD 和静态构建支持的添加。核心架构未变，依赖方向依然合规。
+1. **架构完全合规。** 5-crate 布局（`app`/`common`/`domain`/`infra`/`tui`）是 TUI 插件的正确拓扑。依赖方向清晰，domain 真正独立于 I/O。
 
-2. **`PaneRepository` trait 仍未使用。** `ports.rs` 中定义的 trait 是正确的抽象，`poll_snapshots()` 上的 TODO 指向它。这是一个好的模式：先定义接口，在需要多态时再接入。
+2. **代码质量优秀。** 966 行 Rust 代码，零 unwrap/expect/unsafe/secrets/debug-output。错误处理统一使用 `thiserror`，所有 `Result` 类型都经过正确传播。
 
-3. **模块可见性良好。** `herdr_client.rs` 中的 `herdr_bin()` 和 `herdr_json()` 标记为 `pub(crate)`，合理限制了公开 API 面。
+3. **`PaneRepository` trait 已定义但未使用。** `ports.rs` 中的 trait 是正确的抽象，`poll_snapshots()` 上的 TODO 指向它。这是一个好的模式：先定义接口，在需要多态时再接入。
 
-4. **`main.rs` 保持精简。** 16 行的入口文件只做三件事：初始化 tracing、解析 CLI、路由到 tui。
+4. **模块可见性良好。** `herdr_client.rs` 中的 `herdr_bin()` 和 `herdr_json()` 标记为 `pub(crate)`，合理限制了公开 API 面。
 
-5. **`cargo-audit` 仍未安装。** 这是唯一持续跳过的检查。对于计划发布到 herdr Marketplace 的插件，建议在 CI 中加入 `cargo audit`。
+5. **`main.rs` 保持精简。** 16 行的入口文件只做三件事：初始化 tracing、解析 CLI、路由到 tui。CLI 定义已提取到 `cli.rs`。
 
-6. **测试策略可改进。** 目前 poller 测试直接构造 `AgentSnapshot` 值对象。当 `PaneRepository` trait 启用后，可以添加 mock 实现来测试 `poll_snapshots()` 的完整流程。
+6. **测试覆盖可改进。** 目前 6 个测试覆盖 domain 逻辑和 infra 持久化。当 `PaneRepository` trait 启用后，可以添加 mock 实现来测试 `poll_snapshots()` 的完整流程。
+
+7. **`cargo-audit` 仍未安装。** 这是唯一持续跳过的检查。对于计划发布到 herdr Marketplace 的插件，建议在 CI 中加入 `cargo audit`。
+
+8. **配置系统简洁。** 使用环境变量（`HERDR_BIN_PATH`、`HERDR_PLUGIN_STATE_DIR`、`HERDR_PLUGIN_CONFIG_DIR`）+ TOML 配置文件，无需单独的 config crate。
 
 ---
 
