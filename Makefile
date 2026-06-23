@@ -56,8 +56,9 @@ release-upload:
 		--title "v$(VERSION)" \
 		--notes "Release v$(VERSION)"
 
-## Link plugin to herdr (local development)
+## Link plugin to herdr (local development, requires server)
 link: build
+	@herdr status 2>&1 | grep -q "status: running" || { echo "Error: herdr server not running. Start with: herdr server"; exit 1; }
 	herdr plugin link $(PLUGIN_DIR)
 
 ## Unlink plugin from herdr
