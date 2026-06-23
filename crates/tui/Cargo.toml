@@ -1,0 +1,14 @@
+[package]
+name = "herdr-insight-tui"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+herdr-insight-common = { path = "../common" }
+herdr-insight-domain = { path = "../domain" }
+herdr-insight-infra = { path = "../infra" }
+ratatui.workspace = true
+crossterm.workspace = true
+chrono.workspace = true
+serde.workspace = true
+toml = "0.8"

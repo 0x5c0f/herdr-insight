@@ -1,0 +1,8 @@
+[package]
+name = "herdr-insight-domain"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+herdr-insight-common = { path = "../common" }
+chrono.workspace = true

@@ -1,0 +1,29 @@
+id = "herdr-insight"
+name = "Herdr Insight"
+version = "0.1.0"
+min_herdr_version = "0.7.0"
+description = "Agent status timeline pane for herdr"
+platforms = ["linux", "macos"]
+
+[[build]]
+command = ["cargo", "build", "--release", "--locked"]
+
+[[panes]]
+id = "timeline"
+title = "Agent Timeline"
+placement = "split"
+command = ["./target/release/herdr-insight", "timeline"]
+
+# Action: open timeline with horizontal split (bottom)
+[[actions]]
+id = "open-timeline-down"
+title = "Open Timeline (bottom)"
+contexts = ["workspace"]
+command = ["herdr", "plugin", "pane", "open", "--plugin", "herdr-insight", "--entrypoint", "timeline", "--direction", "down"]
+
+# Action: open timeline with vertical split (right)
+[[actions]]
+id = "open-timeline-right"
+title = "Open Timeline (right)"
+contexts = ["workspace"]
+command = ["herdr", "plugin", "pane", "open", "--plugin", "herdr-insight", "--entrypoint", "timeline", "--direction", "right"]
