@@ -135,7 +135,13 @@ fn render_header(frame: &mut Frame, area: Rect, config: &TimelineConfig) {
     frame.render_widget(Paragraph::new(line).style(Style::default()), row);
 }
 
-fn render_entry(frame: &mut Frame, area: Rect, entry: &StateTransition, config: &TimelineConfig, active_panes: &std::collections::HashSet<String>) {
+fn render_entry(
+    frame: &mut Frame,
+    area: Rect,
+    entry: &StateTransition,
+    config: &TimelineConfig,
+    active_panes: &std::collections::HashSet<String>,
+) {
     let mut spans = Vec::new();
 
     // TIME column
@@ -150,9 +156,9 @@ fn render_entry(frame: &mut Frame, area: Rect, entry: &StateTransition, config: 
     // STATE column (icon) - show current state based on active_panes
     if config.columns.state {
         let current_state = if active_panes.contains(&entry.pane_id) {
-            entry.to  // Agent is still in the same state
+            entry.to // Agent is still in the same state
         } else {
-            herdr_insight_common::AgentState::Idle  // Agent is now idle
+            herdr_insight_common::AgentState::Idle // Agent is now idle
         };
         let (icon, color) = state_icon_color(current_state);
         spans.push(Span::styled(icon, Style::default().fg(color).bold()));
@@ -179,9 +185,9 @@ fn render_entry(frame: &mut Frame, area: Rect, entry: &StateTransition, config: 
     // STATUS column - show current state based on active_panes
     if config.columns.status {
         let current_state = if active_panes.contains(&entry.pane_id) {
-            entry.to  // Agent is still in the same state
+            entry.to // Agent is still in the same state
         } else {
-            herdr_insight_common::AgentState::Idle  // Agent is now idle
+            herdr_insight_common::AgentState::Idle // Agent is now idle
         };
         let state_str = format!("{:?}", current_state).to_lowercase();
         spans.push(Span::raw(format!("{state_str:<10} ")));

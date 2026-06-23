@@ -50,13 +50,12 @@ pub fn detect_transitions(
             let duration_secs =
                 prev.map(|p| (now - p.timestamp).num_milliseconds() as f64 / 1000.0);
             // Set ended_at when transitioning from active state to inactive
-            let ended_at = if prev.map(|p| p.state.is_active()).unwrap_or(false)
-                && !snap.state.is_active()
-            {
-                Some(now)
-            } else {
-                None
-            };
+            let ended_at =
+                if prev.map(|p| p.state.is_active()).unwrap_or(false) && !snap.state.is_active() {
+                    Some(now)
+                } else {
+                    None
+                };
             transitions.push(StateTransition {
                 timestamp: now,
                 pane_id: snap.pane_id.clone(),
