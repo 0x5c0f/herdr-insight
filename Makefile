@@ -19,9 +19,15 @@ link: build
 unlink:
 	herdr plugin unlink $(PLUGIN_ID)
 
-## Install plugin from GitHub
+## Install plugin from GitHub and build
 install:
 	herdr plugin install 0x5c0f/herdr-insight --yes
+	@# Build binary in plugin directory
+	@PLUGIN_DIR=$$(find ~/.config/herdr/plugins/github -name "herdr-insight" -type d 2>/dev/null | head -1); \
+	if [ -n "$$PLUGIN_DIR" ] && [ -f "$$PLUGIN_DIR/Cargo.toml" ]; then \
+		echo "Building binary in $$PLUGIN_DIR..."; \
+		cd "$$PLUGIN_DIR" && cargo build --release --locked; \
+	fi
 
 ## Uninstall plugin
 uninstall:
@@ -31,6 +37,12 @@ uninstall:
 update:
 	herdr plugin unlink $(PLUGIN_ID) 2>/dev/null || true
 	herdr plugin install 0x5c0f/herdr-insight --yes
+	@# Build binary in plugin directory
+	@PLUGIN_DIR=$$(find ~/.config/herdr/plugins/github -name "herdr-insight" -type d 2>/dev/null | head -1); \
+	if [ -n "$$PLUGIN_DIR" ] && [ -f "$$PLUGIN_DIR/Cargo.toml" ]; then \
+		echo "Building binary in $$PLUGIN_DIR..."; \
+		cd "$$PLUGIN_DIR" && cargo build --release --locked; \
+	fi
 
 ## Run tests
 test:
