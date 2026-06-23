@@ -6,7 +6,7 @@ description = "Agent status timeline pane for herdr"
 platforms = ["linux", "macos"]
 
 [[build]]
-command = ["cargo", "build", "--release", "--locked"]
+command = ["make", "build"]
 
 [[panes]]
 id = "timeline"

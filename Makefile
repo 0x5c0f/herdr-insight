@@ -1,15 +1,60 @@
 # herdr-insight Makefile
-# Plugin maintenance: build, install, link, uninstall, update, test, lint
+# Plugin maintenance: build, install, link, uninstall, update, test, lint, release
 
 PLUGIN_ID := herdr-insight
 PLUGIN_DIR := $(shell pwd)
 CONFIG_DIR := $(shell herdr plugin config-dir $(PLUGIN_ID) 2>/dev/null || echo "$$HOME/.config/herdr/plugins/config/$(PLUGIN_ID)")
+VERSION := $(shell grep '^version' crates/app/Cargo.toml | head -1 | sed 's/.*"\(.*\)"/\1/')
+GITHUB_REPO := 0x5c0f/herdr-insight
 
-.PHONY: build link unlink install uninstall update clean test lint check help
+# Detect platform
+OS := $(shell uname -s | tr '[:upper:]' '[:lower:]')
+ARCH := $(shell uname -m | sed 's/x86_64/x86_64/' | sed 's/aarch64/arm64/')
+ASSET_NAME := herdr-insight-$(OS)-$(ARCH)
 
-## Build release binary
+.PHONY: build build-static link unlink install uninstall update clean test lint check release release-upload help
+
+## Build release binary (local cargo or download pre-compiled)
 build:
-	cargo build --release --locked
+	@if command -v cargo >/dev/null 2>&1; then \
+		echo "Building with cargo..."; \
+		cargo build --release --locked; \
+	else \
+		echo "Cargo not found, downloading pre-compiled binary..."; \
+		$(MAKE) download; \
+	fi
+
+## Download pre-compiled binary from GitHub releases
+download:
+	@echo "Downloading $(ASSET_NAME) v$(VERSION)..."
+	@curl -L -o herdr-insight \
+		"https://github.com/$(GITHUB_REPO)/releases/download/v$(VERSION)/$(ASSET_NAME)"
+	@chmod +x herdr-insight
+	@echo "Downloaded: herdr-insight"
+
+## Build static binary (musl, for Linux distribution)
+build-static:
+	@echo "Building static binary with musl..."
+	rustup target add x86_64-unknown-linux-musl 2>/dev/null || true
+	cargo build --release --locked --target x86_64-unknown-linux-musl
+	cp target/x86_64-unknown-linux-musl/release/herdr-insight ./herdr-insight-static
+	@echo "Static binary: herdr-insight-static"
+
+## Build release tarballs for all platforms
+release: build-static
+	@echo "Creating release tarballs..."
+	@mkdir -p dist
+	tar -czf dist/$(ASSET_NAME).tar.gz -C target/release herdr-insight
+	tar -czf dist/herdr-insight-linux-x86_64-static.tar.gz herdr-insight-static
+	@echo "Release artifacts in dist/"
+
+## Upload release to GitHub (requires gh CLI)
+release-upload:
+	@echo "Uploading release v$(VERSION)..."
+	gh release create v$(VERSION) dist/*.tar.gz \
+		--repo $(GITHUB_REPO) \
+		--title "v$(VERSION)" \
+		--notes "Release v$(VERSION)"
 
 ## Link plugin to herdr (local development)
 link: build
@@ -19,15 +64,9 @@ link: build
 unlink:
 	herdr plugin unlink $(PLUGIN_ID)
 
-## Install plugin from GitHub and build
+## Install plugin from GitHub
 install:
-	herdr plugin install 0x5c0f/herdr-insight --yes
-	@# Build binary in plugin directory
-	@PLUGIN_DIR=$$(find ~/.config/herdr/plugins/github -name "herdr-insight" -type d 2>/dev/null | head -1); \
-	if [ -n "$$PLUGIN_DIR" ] && [ -f "$$PLUGIN_DIR/Cargo.toml" ]; then \
-		echo "Building binary in $$PLUGIN_DIR..."; \
-		cd "$$PLUGIN_DIR" && cargo build --release --locked; \
-	fi
+	herdr plugin install $(GITHUB_REPO) --yes
 
 ## Uninstall plugin
 uninstall:
@@ -36,13 +75,7 @@ uninstall:
 ## Update plugin (reinstall from GitHub)
 update:
 	herdr plugin unlink $(PLUGIN_ID) 2>/dev/null || true
-	herdr plugin install 0x5c0f/herdr-insight --yes
-	@# Build binary in plugin directory
-	@PLUGIN_DIR=$$(find ~/.config/herdr/plugins/github -name "herdr-insight" -type d 2>/dev/null | head -1); \
-	if [ -n "$$PLUGIN_DIR" ] && [ -f "$$PLUGIN_DIR/Cargo.toml" ]; then \
-		echo "Building binary in $$PLUGIN_DIR..."; \
-		cd "$$PLUGIN_DIR" && cargo build --release --locked; \
-	fi
+	herdr plugin install $(GITHUB_REPO) --yes
 
 ## Run tests
 test:
@@ -59,6 +92,8 @@ check: lint test
 ## Clean build artifacts
 clean:
 	cargo clean
+	rm -f herdr-insight herdr-insight-static
+	rm -rf dist
 
 ## Open timeline panel
 open:
@@ -100,10 +135,14 @@ config-init:
 
 ## Show available targets
 help:
-	@echo "herdr-insight Makefile"
+	@echo "herdr-insight Makefile v$(VERSION)"
 	@echo ""
 	@echo "Build & Install:"
-	@echo "  make build         Build release binary"
+	@echo "  make build         Build release binary (cargo or download)"
+	@echo "  make download      Download pre-compiled binary"
+	@echo "  make build-static  Build static binary (musl)"
+	@echo "  make release       Build release tarballs"
+	@echo "  make release-upload Upload release to GitHub"
 	@echo "  make link          Build and link to herdr (local dev)"
 	@echo "  make unlink        Unlink from herdr"
 	@echo "  make install       Install from GitHub"
