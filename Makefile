@@ -21,7 +21,7 @@ unlink:
 
 ## Install plugin from GitHub
 install:
-	herdr plugin install --yes 0x5c0f/herdr-insight
+	herdr plugin install 0x5c0f/herdr-insight --yes
 
 ## Uninstall plugin
 uninstall:
@@ -30,7 +30,7 @@ uninstall:
 ## Update plugin (reinstall from GitHub)
 update:
 	herdr plugin unlink $(PLUGIN_ID) 2>/dev/null || true
-	herdr plugin install --yes 0x5c0f/herdr-insight
+	herdr plugin install 0x5c0f/herdr-insight --yes
 
 ## Run tests
 test:
