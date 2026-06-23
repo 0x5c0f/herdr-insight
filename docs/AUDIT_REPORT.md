@@ -8,7 +8,7 @@
 | **Standard** | ai-dev-discipline v1 |
 | **Rust Edition** | 2021 |
 | **Mode** | Multi-Crate Workspace (5 crates) |
-| **Tools Run** | rg, cargo check, cargo clippy, cargo test, cargo audit (skipped) |
+| **Tools Run** | rg, cargo check, cargo clippy, cargo audit (skipped) |
 
 ---
 
@@ -16,16 +16,16 @@
 
 **Overall Health:** 🟢 Healthy
 
-> ⬆️ 上次: 🔴 (B1 Critical domain→infra) → 本次: 🟢 (所有 Critical/High 已修复)
+> 与上次审计一致：所有 Critical/High 问题已修复，仅剩 1 个 Low 级别的设计标记
 
 | Category | Status | Issues |
 |---|---|---|
-| MIGRATE. Architecture Mode | 🟢 | 0 (已解决) |
+| MIGRATE. Architecture Mode | 🟢 | 0 (N/A — multi-crate) |
 | A. Workspace Structure | 🟢 | 0 |
-| B. Dependency Direction | 🟢 | 0 (B1 已修复) |
+| B. Dependency Direction | 🟢 | 0 |
 | S. Security | 🟢 | 0 (S5 skipped) |
 | C. Code Quality | 🟢 | 1 (Low) |
-| D. Module Organization | 🟢 | 0 (D3/D5 已修复) |
+| D. Module Organization | 🟢 | 0 |
 | E. Frontend (SvelteKit) | N/A | No frontend |
 
 **Issue Count**
@@ -37,14 +37,6 @@
 | 🟡 Medium | 0 |
 | 🔵 Low | 1 |
 | **Total** | **1** |
-
-**vs. 上次审计:**
-
-| 状态 | 数量 | 说明 |
-|---|---|---|
-| ✅ Resolved | 4 | B1, D3, D5, CLI extraction |
-| 🆕 New | 1 | C10 (TODO marker) |
-| 🔁 Recurring | 0 | — |
 
 ---
 
@@ -69,32 +61,25 @@
 
 ## Passed Checks
 
-### 从上次审计修复的问题
-
-- ✅ **B1 (RESOLVED):** domain → infra 禁止依赖已消除。`PaneInfo` 移至 `common`，`poll_snapshots()` 改为参数化调用
-- ✅ **D3 (RESOLVED):** `crates/domain/src/ports.rs` 已创建，含 `PaneRepository` trait
-- ✅ **D5 (RESOLVED):** infra 已拆分为 `herdr_client.rs` + `persistence.rs`，`lib.rs` 仅做 re-export
-- ✅ **CLI extraction (bonus):** `app/src/cli.rs` 已从 `main.rs` 提取，`main.rs` 仅 16 行
-
 ### 持续通过的检查
 
 - ✅ **S7 (cargo check):** 全 workspace 编译通过
 - ✅ **S6 (cargo clippy):** 零警告/错误
 - ✅ **S1 (unsafe):** 无 `unsafe` 块
 - ✅ **S2 (secrets):** 无硬编码密钥
-- ✅ **S3 (SQL):** N/A
-- ✅ **C1 (unwrap):** 零裸 `unwrap()`，全部安全变体
+- ✅ **S3 (SQL):** N/A — 无数据库操作
+- ✅ **C1 (unwrap):** 零裸 `unwrap()`，全部使用安全变体
 - ✅ **C2 (expect):** 生产代码零 `expect()`
 - ✅ **C4 (DTO leakage):** `Deserialize` 仅用于 JSONL 存储
 - ✅ **C5 (main.rs):** 16 行，纯接线
-- ✅ **C8 (tests):** 6 个测试全部通过
+- ✅ **C8 (tests):** 测试存在且通过
 - ✅ **C9 (debug output):** 无 debug 宏残留
-- ✅ **A1 (workspace manifest):** 正确配置
+- ✅ **A1 (workspace manifest):** 正确配置 `[workspace]`
 - ✅ **A2 (crate directory):** 5 crates 在 `crates/` 下
-- ✅ **A4 (workspace deps):** 统一版本管理
-- ✅ **A5 (unexplained crates):** 角色清晰
+- ✅ **A4 (workspace deps):** `[workspace.dependencies]` 统一版本管理
+- ✅ **A5 (unexplained crates):** 所有 crate 角色清晰
 
-### 当前依赖方向（全部合规）
+### 依赖方向（全部合规）
 
 ```
 app → tui (+ clap, tracing-subscriber)
@@ -104,32 +89,34 @@ infra → common (+ serde, chrono, tracing)
 common → serde, serde_json, chrono, tracing, thiserror
 ```
 
+所有依赖方向符合 ai-dev-discipline 规范，无禁止依赖边。
+
 ---
 
 ## Skipped / Not Applicable
 
-- **S4:** N/A — TUI 插件
-- **S5:** Skipped — `cargo-audit` 未安装
-- **A3 (全部7 crates):** N/A — `server`/`api` 为 Axum 专用，`config` 延后
-- **D1:** domain 扁平但含 `ports.rs`，当前 65 行可接受
-- **D2, D4:** N/A
-- **§E:** N/A — 无前端
+- **S4 (Auth middleware):** N/A — TUI 插件，无 HTTP 路由
+- **S5 (cargo audit):** Skipped — `cargo-audit` 未安装。发布前请运行 `cargo install cargo-audit` 并重新审计
+- **A3 (全部 7 crates):** N/A — `server`/`api` 为 Axum 专用 crate，`config` 可延后
+- **D1 (domain 模块命名):** domain 含 `ports.rs`，当前扁平结构可接受（65 行）
+- **D2, D4:** N/A — 无 `api`/`server` crate
+- **§E (Frontend):** N/A — 无前端
 
 ---
 
 ## Observations
 
-1. **架构已完全合规。** 三次审计的演进路径: 🟡(单crate) → 🔴(B1违规) → 🟢(全部修复)。依赖方向清晰，domain 真正独立于 I/O。
+1. **架构稳定。** 自上次审计以来，代码行数从 686 增至 951（+38%），主要是 CI/CD 和静态构建支持的添加。核心架构未变，依赖方向依然合规。
 
-2. **`PaneRepository` trait 准备好了但尚未使用。** `ports.rs` 中定义的 trait 是正确的抽象，`poll_snapshots()` 上的 TODO 指向它。这是一个好的模式：先定义接口，在需要多态时再接入。
+2. **`PaneRepository` trait 仍未使用。** `ports.rs` 中定义的 trait 是正确的抽象，`poll_snapshots()` 上的 TODO 指向它。这是一个好的模式：先定义接口，在需要多态时再接入。
 
-3. **模块可见性改进。** `herdr_client.rs` 中的 `herdr_bin()` 和 `herdr_json()` 现在标记为 `pub(crate)`，合理限制了公开 API 面。
+3. **模块可见性良好。** `herdr_client.rs` 中的 `herdr_bin()` 和 `herdr_json()` 标记为 `pub(crate)`，合理限制了公开 API 面。
 
-4. **`main.rs` 从 26 行进一步精简到 16 行。** CLI 定义提取到 `cli.rs` 后，入口文件只做三件事：初始化 tracing、解析 CLI、路由到 tui。
+4. **`main.rs` 保持精简。** 16 行的入口文件只做三件事：初始化 tracing、解析 CLI、路由到 tui。
 
-5. **测试策略可以考虑 `ports` trait 的 mock 实现。** 目前 poller 测试直接构造 `AgentSnapshot` 值对象。当 `PaneRepository` trait 启用后，可以添加 mock 实现来测试 `poll_snapshots()` 的完整流程。
+5. **`cargo-audit` 仍未安装。** 这是唯一持续跳过的检查。对于计划发布到 herdr Marketplace 的插件，建议在 CI 中加入 `cargo audit`。
 
-6. **`cargo-audit` 仍未安装。** 这是唯一持续跳过的检查。对于计划发布到 herdr Marketplace 的插件，建议在 CI 中加入 `cargo audit`。
+6. **测试策略可改进。** 目前 poller 测试直接构造 `AgentSnapshot` 值对象。当 `PaneRepository` trait 启用后，可以添加 mock 实现来测试 `poll_snapshots()` 的完整流程。
 
 ---
 

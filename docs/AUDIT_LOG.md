@@ -177,4 +177,50 @@ All dependency directions comply with ai-dev-discipline. No forbidden edges.
 
 ---
 
+## 2026-06-23 — Re-Audit #3 (Post CI/CD changes)
+
+| Field | Value |
+|---|---|
+| **Project** | herdr-insight |
+| **Mode** | Multi-Crate Workspace (5 crates) |
+| **Health** | 🟢 |
+| **🔴 Critical** | 0 |
+| **🟠 High** | 0 |
+| **🟡 Medium** | 0 |
+| **🔵 Low** | 1 |
+| **Total LoC** | 951 |
+
+### Findings
+
+| ID | Severity | Summary | File | Status |
+|---|---|---|---|---|
+| C10 | 🔵 Low | Intentional TODO marker (design note) | `crates/domain/src/lib.rs:8` | 🔁 Recurring — 无变化，按设计延后 |
+
+### Passed Highlights
+
+- 所有 Critical/High/Medium 问题持续保持已修复状态
+- 代码行数增长 38%（686 → 951），主要来自 CI/CD 和静态构建支持
+- 核心架构未变，依赖方向依然合规
+- cargo check + clippy 通过
+- 零 unwrap/expect/unsafe/secrets/debug-output
+
+### Notes
+
+- 自上次审计以来的变更：静态构建支持、CI/CD 配置、安装脚本优化
+- `cargo-audit` 仍未安装 — S5 第 4 次跳过
+- 4-audit 轨迹: 🟡(单crate) → 🔴(B1) → 🟢(全部修复) → 🟢(稳定)
+
+---
+
+## Trend Summary
+
+| Audit | Date | Health | Critical | High | Medium | Low |
+|---|---|---|---|---|---|---|
+| Initial | 2026-06-23 | 🟡 | 0 | 1 | 0 | 2 |
+| Re-Audit #1 | 2026-06-23 | 🔴 | 1 | 0 | 2 | 1 |
+| Re-Audit #2 | 2026-06-23 | 🟢 | 0 | 0 | 0 | 1 |
+| Re-Audit #3 | 2026-06-23 | 🟢 | 0 | 0 | 0 | 1 |
+
+---
+
 *Audit conducted by ai-dev-audit v1.*
