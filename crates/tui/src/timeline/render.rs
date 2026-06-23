@@ -118,9 +118,6 @@ fn render_header(frame: &mut Frame, area: Rect, config: &TimelineConfig) {
             Style::default().fg(Color::DarkGray),
         ));
     }
-    if config.columns.output {
-        spans.push(Span::styled("OUTPUT", Style::default().fg(Color::DarkGray)));
-    }
 
     let line = Line::from(spans);
     frame.render_widget(Paragraph::new(line).style(Style::default()), row);
@@ -190,27 +187,12 @@ fn render_entry(frame: &mut Frame, area: Rect, entry: &StateTransition, config: 
     // SESSION column
     if config.columns.session {
         let session_display = match &entry.session_id {
-            Some(sid) => {
-                let truncated: String = sid.chars().take(12).collect();
-                format!("{truncated} ")
-            }
+            Some(sid) => format!("{sid} "),
             None => "\u{2014} ".to_string(), // em dash
         };
         spans.push(Span::styled(
             session_display,
             Style::default().fg(Color::DarkGray),
-        ));
-    }
-
-    // OUTPUT column
-    if config.columns.output {
-        let output_display = match &entry.last_output {
-            Some(text) => format!("\"{text}\""),
-            None => "\u{2014}".to_string(),
-        };
-        spans.push(Span::styled(
-            output_display,
-            Style::default().fg(Color::Gray),
         ));
     }
 
