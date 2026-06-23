@@ -27,8 +27,10 @@ build:
 ## Download pre-compiled binary from GitHub releases
 download:
 	@echo "Downloading $(ASSET_NAME) v$(VERSION)..."
-	@curl -L -o herdr-insight \
-		"https://github.com/$(GITHUB_REPO)/releases/download/v$(VERSION)/$(ASSET_NAME)"
+	@curl -L -o /tmp/herdr-insight.tar.gz \
+		"https://github.com/$(GITHUB_REPO)/releases/download/v$(VERSION)/$(ASSET_NAME).tar.gz"
+	@tar -xzf /tmp/herdr-insight.tar.gz -C .
+	@rm -f /tmp/herdr-insight.tar.gz
 	@chmod +x herdr-insight
 	@echo "Downloaded: herdr-insight"
 
