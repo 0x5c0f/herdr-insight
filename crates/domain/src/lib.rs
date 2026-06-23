@@ -49,6 +49,14 @@ pub fn detect_transitions(
         if state_changed {
             let duration_secs =
                 prev.map(|p| (now - p.timestamp).num_milliseconds() as f64 / 1000.0);
+            // Set ended_at when transitioning from active state to inactive
+            let ended_at = if prev.map(|p| p.state.is_active()).unwrap_or(false)
+                && !snap.state.is_active()
+            {
+                Some(now)
+            } else {
+                None
+            };
             transitions.push(StateTransition {
                 timestamp: now,
                 pane_id: snap.pane_id.clone(),
@@ -56,6 +64,7 @@ pub fn detect_transitions(
                 from: prev.map(|p| p.state).unwrap_or(AgentState::Unknown),
                 to: snap.state,
                 duration_secs,
+                ended_at,
                 session_id: snap.session_id.clone(),
                 last_output: snap.last_output.clone(),
             });

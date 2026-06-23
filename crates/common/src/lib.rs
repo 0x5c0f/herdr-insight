@@ -54,6 +54,9 @@ pub struct StateTransition {
     pub from: AgentState,
     pub to: AgentState,
     pub duration_secs: Option<f64>,
+    /// When the task ended (None if still active).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub ended_at: Option<chrono::DateTime<chrono::Utc>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub session_id: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]

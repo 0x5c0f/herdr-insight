@@ -187,10 +187,10 @@ fn render_entry(frame: &mut Frame, area: Rect, entry: &StateTransition, config: 
         spans.push(Span::raw(format!("{state_str:<10} ")));
     }
 
-    // DURATION column - show how long the current task has been active
+    // DURATION column - show task duration (stopped if task ended, live if still active)
     if config.columns.duration {
-        let now = chrono::Utc::now();
-        let dur = (now - entry.timestamp).num_milliseconds() as f64 / 1000.0;
+        let end_time = entry.ended_at.unwrap_or_else(chrono::Utc::now);
+        let dur = (end_time - entry.timestamp).num_milliseconds() as f64 / 1000.0;
         if dur >= 3600.0 {
             spans.push(Span::styled(
                 format!("{:4.0}h ", dur / 3600.0),

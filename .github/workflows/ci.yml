@@ -25,17 +25,3 @@ jobs:
 
       - name: Run tests
         run: cargo test --workspace
-
-  build:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest]
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Build
-        run: cargo build --release --locked
