@@ -1,15 +1,17 @@
 # herdr-insight
 
+[English](README.md) | [中文](README_zh-CN.md)
+
 Agent status timeline pane for [herdr](https://herdr.dev).
 
-Real-time visualization of agent state transitions across all workspaces. Track when agents start working, get blocked, finish tasks, or go idle.
+Real-time visualization of agent tasks across all workspaces. Track when agents start working, get blocked, or go idle.
 
 ## Features
 
-- Real-time agent status timeline (working/blocked/done/idle)
+- Real-time agent task timeline (working/blocked states)
+- Task aggregation — one entry per agent, deduplicated
 - Configurable columns (show/hide any column)
 - Session ID tracking
-- Last output preview
 - Horizontal split (bottom) and vertical split (right) modes
 - 7-day timeline data retention
 - Multi-workspace agent tracking
@@ -88,8 +90,8 @@ herdr plugin action invoke herdr-insight.open-timeline-right
 | Key | Action |
 |-----|--------|
 | `q` / `Esc` | Close timeline |
-| `↑` / `k` | Scroll up |
-| `↓` / `j` | Scroll down |
+| `↑` / `k` | Scroll up (newer tasks) |
+| `↓` / `j` | Scroll down (older tasks) |
 
 ## Configuration
 
@@ -104,12 +106,12 @@ make config-init
 ```toml
 [columns]
 time = true        # Timestamp
-state = true       # Status icon (●▲○◌)
+state = true       # Status icon (● working / ▲ blocked)
 agent = true       # Agent name
 pane = true        # Pane ID [wX:pY]
-status = true      # Status text (idle/working/blocked/done)
-duration = true    # Duration in previous state
-session = true     # Session ID
+status = true      # Status text (working/blocked)
+duration = true    # Current task duration
+session = true     # Full session ID
 ```
 
 ### Default values
@@ -121,7 +123,7 @@ session = true     # Session ID
 | `agent` | `true` | Show agent name |
 | `pane` | `true` | Show pane ID |
 | `status` | `true` | Show status text |
-| `duration` | `true` | Show duration in previous state |
+| `duration` | `true` | Show current task duration |
 | `session` | `true` | Show full session ID |
 
 ## Build from source
