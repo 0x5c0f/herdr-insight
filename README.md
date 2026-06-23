@@ -1,6 +1,6 @@
 # herdr-insight
 
-[English](README.md) | [中文](README_zh-CN.md)
+English | [简体中文](README_zh-CN.md)
 
 Agent status timeline pane for [herdr](https://herdr.dev).
 

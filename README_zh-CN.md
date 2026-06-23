@@ -1,6 +1,6 @@
 # herdr-insight
 
-[English](README.md) | [中文](README_zh-CN.md)
+[English](README.md) | 简体中文
 
 [herdr](https://herdr.dev) 的 Agent 状态时间线面板。
 
