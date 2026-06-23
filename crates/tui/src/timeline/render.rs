@@ -90,38 +90,44 @@ fn render_header(frame: &mut Frame, area: Rect, config: &TimelineConfig) {
     let row = Rect::new(area.x, area.y, area.width, 1);
     let mut spans = Vec::new();
 
+    // Match data column widths exactly
     if config.columns.time {
+        // Data: " HH:MM " = 7 chars
         spans.push(Span::styled(
             " TIME  ",
             Style::default().fg(Color::DarkGray),
         ));
     }
     if config.columns.state {
-        spans.push(Span::styled("ST", Style::default().fg(Color::DarkGray)));
-        spans.push(Span::raw(" "));
+        // Data: icon (1-2 chars) + " " = 2-3 chars
+        spans.push(Span::styled("ST ", Style::default().fg(Color::DarkGray)));
     }
     if config.columns.agent {
-        spans.push(Span::styled("AGENT", Style::default().fg(Color::DarkGray)));
-        spans.push(Span::raw(" "));
+        // Data: label (variable) + " "
+        spans.push(Span::styled("AGENT ", Style::default().fg(Color::DarkGray)));
     }
     if config.columns.pane {
+        // Data: "[wX:pY]" = 8 chars + " " = 9 chars
         spans.push(Span::styled(
-            "PANE    ",
+            "PANE     ",
             Style::default().fg(Color::DarkGray),
         ));
     }
     if config.columns.status {
+        // Data: "{state:<10} " = 11 chars
         spans.push(Span::styled(
-            "STATUS    ",
+            "STATUS     ",
             Style::default().fg(Color::DarkGray),
         ));
     }
     if config.columns.duration {
-        spans.push(Span::styled("DUR  ", Style::default().fg(Color::DarkGray)));
+        // Data: "XXXmin " or "XXh " or "XXs " = 5-6 chars
+        spans.push(Span::styled("DUR   ", Style::default().fg(Color::DarkGray)));
     }
     if config.columns.session {
+        // Data: full UUID (36 chars) + " " = 37 chars
         spans.push(Span::styled(
-            "SESSION   ",
+            "SESSION                              ",
             Style::default().fg(Color::DarkGray),
         ));
     }
